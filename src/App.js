@@ -33,6 +33,7 @@ function App() {
   const [modalStyle] = React.useState(getModalStyle);
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
+  const [openSingIn, setOpenSingIn]  = useState(false);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -40,16 +41,20 @@ function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    auth.onAuthStateChanged((authUser) =>{
+    const unsubscribe =  auth.onAuthStateChanged((authUser) =>{
       if(authUser) {
         // user has logged in ..
         setUser(authUser);
+        console.log(authUser);
       }else{
         //user has logget out..
         setUser(null);
       }
     })
-  },[])
+    return () => {
+      unsubscribe();
+    }
+  },[user, username]);
 
   useEffect(() => {
     db.collection("posts").onSnapshot(snapshot => {
@@ -65,8 +70,23 @@ function App() {
   const signUp = event => {
     event.preventDefault();
     auth.createUserWithEmailAndPassword(email, password)
+    .then((authUser) => {
+      return authUser.user.updateProfile({
+        displayName: username
+      })
+    })
     .catch((error) => alert(error.message))
+    setOpen(false);
   };
+
+  const signIn = (event) => {
+    event.preventDefault();
+    auth
+      .signInWithEmailAndPassword(email, password)
+      .catch((error) => alert(error.message))
+
+      setOpenSingIn(false);
+  }
 
   return (
     <div className="App">
@@ -107,14 +127,53 @@ function App() {
         </div>
       </Modal>
 
+      <Modal open={openSingIn} onClose={() => setOpenSingIn(false)}>
+        <div style={modalStyle} className={classes.paper}>
+          <form className="app__signup">
+            <center>
+              <img
+                className="app_headerImage"
+                src="https://instagram.com/static/images/web/mobile_nav_type_logo-2x.png/1b47f9d0e595.png"
+                alt=""
+              />
+            </center>
+
+            <Input
+              placeholder="email"
+              type="text"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+            />
+
+            <Input
+              placeholder="password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+            />
+
+            <Button type="submit" onClick={signIn}>Sing Up</Button>
+          </form>
+        </div>
+      </Modal>
+
+
+
       <div className="app__header">
         <img
           className="app_headerImage"
           src="https://instagram.com/static/images/web/mobile_nav_type_logo-2x.png/1b47f9d0e595.png"
         />
       </div>
-
-      <Button onClick={() => setOpen(true)}>Sign up</Button>
+      {user ?  (
+        <Button onClick={() => auth.signOut()}>Logout</Button>
+      ): (
+        <div className="app__loginContainer">
+          <Button onClick={() => setOpenSingIn(true)}>Sign In</Button>
+          <Button onClick={() => setOpen(true)}>Sign up</Button>
+        </div>
+      )}
+      
 
       {posts.map(({ id, post }) => (
         <Post

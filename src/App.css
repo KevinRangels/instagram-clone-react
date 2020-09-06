@@ -1,18 +1,35 @@
-*{
+* {
   margin: 0;
 }
-.App{
+.App {
   background-color: #fafafa;
   height: 100vh;
 }
-.app__header{
+.app__posts {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+.app__postsLeft{
+  margin-right: 20px;
+}
+.app__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   background-color: white;
   padding: 20px;
   object-fit: contain;
   border-bottom: 1px solid lightgray;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-
-.app__signup{
+.app_headerImage {
+  object-fit: contain;
+  width: 120px;
+}
+.app__signup {
   display: flex;
   text-align: center;
   flex-direction: column;
